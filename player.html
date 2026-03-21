@@ -1,0 +1,1150 @@
+<!--
+Copyright 2026 The Funkatorium (Falco & Rook Schäfer)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+/* ============================================
+   MUSE TTS Embed — Player
+   Design: Champagne Gold / Cyberpunk-Warm
+   ============================================ */
+
+:root {
+  --bg-void: #08080a;
+  --bg-deep: #0b0b0e;
+  --bg-surface: #131316;
+  --bg-elevated: #1a1a1e;
+  --bg-overlay: #222226;
+
+  --gold-50: rgba(201, 184, 150, 0.05);
+  --gold-100: rgba(201, 184, 150, 0.10);
+  --gold-150: rgba(201, 184, 150, 0.15);
+  --gold-200: rgba(201, 184, 150, 0.20);
+  --gold-300: rgba(201, 184, 150, 0.30);
+  --gold-400: rgba(201, 184, 150, 0.40);
+  --gold-500: #c9b896;
+  --gold-600: #bdac8a;
+  --gold-700: #b1a07e;
+
+  --state-speak: #7eb88c;
+  --state-speak-glow: rgba(126, 184, 140, 0.3);
+  --state-speak-bg: rgba(126, 184, 140, 0.08);
+
+  --error: #c45a5a;
+
+  --text-primary: #f0eee9;
+  --text-secondary: #8a877f;
+  --text-muted: #5e5c58;
+  --text-ghost: #3e3c39;
+
+  --border-default: rgba(138, 135, 127, 0.10);
+  --border-hover: rgba(201, 184, 150, 0.20);
+  --border-active: rgba(201, 184, 150, 0.40);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  --glow-gold-sm: 0 0 12px var(--gold-200);
+  --glow-speak: 0 0 24px var(--state-speak-glow);
+
+  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: transparent;
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Player Container ---- */
+.player {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  position: relative;
+  max-width: 480px;
+  transition: border-color 300ms ease, box-shadow 300ms ease;
+  animation: player-enter 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.player:hover {
+  border-color: var(--border-hover);
+}
+
+.player.playing {
+  border-color: rgba(126, 184, 140, 0.15);
+}
+
+/* Corner brackets */
+.player::before, .player::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--gold-200);
+  border-style: solid;
+  pointer-events: none;
+  transition: border-color 300ms ease;
+}
+.player::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.player::after  { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
+
+.player-inner { position: relative; }
+.player-inner::before, .player-inner::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--gold-200);
+  border-style: solid;
+  pointer-events: none;
+  transition: border-color 300ms ease;
+}
+.player-inner::before { bottom: -14px; left: -18px; border-width: 0 0 1px 1px; }
+.player-inner::after  { bottom: -14px; right: -18px; border-width: 0 1px 1px 0; }
+
+.player:hover::before, .player:hover::after,
+.player:hover .player-inner::before, .player:hover .player-inner::after {
+  border-color: var(--gold-300);
+}
+
+.player.playing::before, .player.playing::after,
+.player.playing .player-inner::before, .player.playing .player-inner::after {
+  border-color: rgba(126, 184, 140, 0.25);
+}
+
+@keyframes player-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Controls Row ---- */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Play/Pause button */
+.btn-play {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--gold-300);
+  color: var(--gold-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+  outline: none;
+}
+
+.btn-play:hover {
+  transform: scale(1.08);
+  box-shadow: var(--glow-gold-sm);
+  border-color: var(--gold-500);
+}
+
+.btn-play:active { transform: scale(0.95); }
+
+.btn-play.playing {
+  border-color: var(--state-speak);
+  color: var(--state-speak);
+  box-shadow: var(--glow-speak);
+}
+
+.btn-play svg { width: 16px; height: 16px; }
+
+/* Progress bar */
+.progress-wrap {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-deep);
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-700), var(--gold-500));
+  border-radius: 3px;
+  width: 0%;
+  transition: none;
+}
+
+.player.playing .progress-fill {
+  background: linear-gradient(90deg, #5a8a6a, var(--state-speak));
+}
+
+/* Time display */
+.time {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 76px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Meta Row ---- */
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-ghost);
+  user-select: none;
+}
+
+/* Voice selector dropdown */
+.voice-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--gold-50);
+  border: 1px solid var(--gold-100);
+  border-radius: var(--radius-sm);
+  padding: 2px 20px 2px 7px;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  outline: none;
+  transition: all 150ms ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235e5c58' stroke-width='1.2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 5px center;
+  max-width: 120px;
+}
+
+.voice-select:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.voice-select:focus {
+  border-color: var(--border-active);
+}
+
+.voice-select option {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.voice-select optgroup {
+  color: var(--gold-500);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.btn-speed {
+  padding: 2px 6px;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 150ms ease;
+  outline: none;
+}
+
+.btn-speed:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 150ms ease;
+  outline: none;
+}
+
+.btn-icon:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-default);
+}
+
+.btn-icon svg { width: 15px; height: 15px; }
+
+/* ---- Loading State ---- */
+.state-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  background: var(--gold-500);
+  border-radius: var(--radius-full);
+  animation: dot-breathe 1.4s ease-in-out infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dot-breathe {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50%      { opacity: 1;   transform: scale(1); }
+}
+
+/* ---- Error State ---- */
+.state-error {
+  color: var(--error);
+  font-size: 0.8rem;
+  padding: 10px 0;
+}
+
+/* ---- Click-to-play hint ---- */
+.click-hint {
+  display: none;
+  font-size: 0.65rem;
+  color: var(--text-ghost);
+  text-align: center;
+  margin-top: 6px;
+  animation: hint-fade 2s ease-in-out infinite;
+}
+
+.click-hint.visible { display: block; }
+
+@keyframes hint-fade {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.8; }
+}
+
+/* ---- Regenerating overlay ---- */
+.regen-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(19, 19, 22, 0.85);
+  border-radius: var(--radius-lg);
+  z-index: 10;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.regen-overlay.visible {
+  display: flex;
+}
+
+/* ---- Reduced Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+  }
+}
+
+/* ---- Hidden utility ---- */
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="player" id="player">
+  <div class="player-inner">
+    <!-- Loading -->
+    <div class="state-loading" id="state-loading">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Generating...</span>
+    </div>
+
+    <!-- Ready -->
+    <div id="state-ready" class="hidden">
+      <div class="controls">
+        <button class="btn-play" id="btn-play" aria-label="Play">
+          <svg id="icon-play" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <polygon points="6,3 20,12 6,21"/>
+          </svg>
+          <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="hidden">
+            <rect x="5" y="3" width="4" height="18" rx="1"/>
+            <rect x="15" y="3" width="4" height="18" rx="1"/>
+          </svg>
+        </button>
+        <div class="progress-wrap" id="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="time" id="time-display">0:00 / 0:00</div>
+      </div>
+      <div class="meta">
+        <span class="brand">MUSE</span>
+        <select class="voice-select" id="voice-select" aria-label="Voice"></select>
+        <button class="btn-speed" id="btn-speed" aria-label="Playback speed">1.0x</button>
+        <button class="btn-icon" id="btn-download" aria-label="Download audio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+      </div>
+      <div class="click-hint" id="click-hint">click to play</div>
+    </div>
+
+    <!-- Error -->
+    <div class="state-error hidden" id="state-error"></div>
+
+    <!-- Regenerating overlay -->
+    <div class="regen-overlay" id="regen-overlay">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <span>Regenerating...</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================
+   MUSE TTS Embed — Player Logic
+   MCP Apps postMessage client + Web Audio API
+   Two-step audio loading (metadata → fetch)
+   ============================================ */
+
+(function() {
+  'use strict';
+
+  // ---- MCP Apps PostMessage Client ----
+  let nextRpcId = 1;
+  const pending = new Map();
+  let hostOrigin = null;
+
+  function sendToHost(msg) {
+    window.parent.postMessage(msg, '*');
+  }
+
+  function rpcRequest(method, params) {
+    return new Promise(function(resolve, reject) {
+      var id = nextRpcId++;
+      pending.set(id, { resolve: resolve, reject: reject });
+      sendToHost({ jsonrpc: '2.0', id: id, method: method, params: params || {} });
+    });
+  }
+
+  window.addEventListener('message', function(event) {
+    // Track host origin from first message
+    if (!hostOrigin && event.origin) {
+      hostOrigin = event.origin;
+    }
+
+    // Validate origin after first contact
+    if (hostOrigin && event.origin !== hostOrigin) return;
+
+    var msg = event.data;
+    if (!msg || msg.jsonrpc !== '2.0') return;
+
+    // Response to our request
+    if (msg.id != null && pending.has(msg.id)) {
+      var p = pending.get(msg.id);
+      pending.delete(msg.id);
+      if (msg.error) p.reject(msg.error);
+      else p.resolve(msg.result);
+      return;
+    }
+
+    // Notification from host
+    if (msg.method) {
+      handleNotification(msg.method, msg.params);
+    }
+  });
+
+  function handleNotification(method, params) {
+    if (method === 'ui/notifications/tool-result') {
+      onToolResult(params);
+    } else if (method === 'ui/notifications/tool-input') {
+      onToolInput(params);
+    } else if (method === 'ui/resource-teardown') {
+      cleanup();
+    }
+  }
+
+  function callServerTool(name, args) {
+    return rpcRequest('tools/call', { name: name, arguments: args });
+  }
+
+  // Initialize handshake
+  async function initMcpApp() {
+    try {
+      await rpcRequest('ui/initialize', {
+        protocolVersion: '2026-01-26',
+        appInfo: { name: 'MUSE TTS Embed', version: '1.0.0' },
+        appCapabilities: {},
+      });
+      sendToHost({
+        jsonrpc: '2.0',
+        method: 'ui/notifications/initialized',
+        params: {},
+      });
+    } catch (e) {
+      // Host may not support full handshake — continue anyway
+    }
+  }
+
+  // ---- DOM Elements ----
+  var elPlayer      = document.getElementById('player');
+  var elLoading     = document.getElementById('state-loading');
+  var elReady       = document.getElementById('state-ready');
+  var elError       = document.getElementById('state-error');
+  var elBtnPlay     = document.getElementById('btn-play');
+  var elIconPlay    = document.getElementById('icon-play');
+  var elIconPause   = document.getElementById('icon-pause');
+  var elProgress    = document.getElementById('progress-bar');
+  var elFill        = document.getElementById('progress-fill');
+  var elTime        = document.getElementById('time-display');
+  var elVoiceSelect = document.getElementById('voice-select');
+  var elBtnSpeed    = document.getElementById('btn-speed');
+  var elBtnDL       = document.getElementById('btn-download');
+  var elHint        = document.getElementById('click-hint');
+  var elRegen       = document.getElementById('regen-overlay');
+
+  // ---- Audio State ----
+  var audioCtx     = null;
+  var audioBuffer  = null;
+  var sourceNode   = null;
+  var startTime    = 0;
+  var pauseOffset  = 0;
+  var isPlaying    = false;
+  var playbackRate = 1.0;
+  var rafId        = null;
+  var audioB64     = null;
+  var currentVoice  = '';
+  var currentClone  = '';
+  var currentText   = '';
+  var currentSpeed  = 1.0;
+  var currentFormat = 'wav';
+  var voicesLoaded  = false;
+
+  // ---- Speed Presets ----
+  var SPEEDS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+  var speedIdx = 2;
+
+  // ---- Speak Lock (multi-view coordination) ----
+  var VIEW_UUID = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+  var LOCK_KEY = 'muse-tts-speak-lock';
+  var lockInterval = null;
+
+  function acquireLock() {
+    try {
+      localStorage.setItem(LOCK_KEY, JSON.stringify({ uuid: VIEW_UUID, ts: Date.now() }));
+    } catch(e) {}
+  }
+
+  function releaseLock() {
+    try {
+      var lock = JSON.parse(localStorage.getItem(LOCK_KEY) || '{}');
+      if (lock.uuid === VIEW_UUID) localStorage.removeItem(LOCK_KEY);
+    } catch(e) {}
+  }
+
+  function startLockMonitor() {
+    lockInterval = setInterval(function() {
+      if (!isPlaying) return;
+      try {
+        var lock = JSON.parse(localStorage.getItem(LOCK_KEY) || '{}');
+        if (lock.uuid && lock.uuid !== VIEW_UUID && lock.ts > Date.now() - 500) {
+          pause();
+        }
+      } catch(e) {}
+    }, 200);
+  }
+
+  // ---- Web Audio API ----
+
+  function initAudioCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
+  }
+
+  async function decodeAudio(b64) {
+    var binary = atob(b64);
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    var ctx = initAudioCtx();
+    return await ctx.decodeAudioData(bytes.buffer.slice(0));
+  }
+
+  function play() {
+    if (!audioBuffer) return;
+
+    var ctx = initAudioCtx();
+
+    // Resume if suspended (autoplay policy)
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+
+    // Stop existing source
+    if (sourceNode) {
+      try { sourceNode.stop(); } catch(e) {}
+      sourceNode.disconnect();
+    }
+
+    sourceNode = ctx.createBufferSource();
+    sourceNode.buffer = audioBuffer;
+    sourceNode.playbackRate.value = playbackRate;
+    sourceNode.connect(ctx.destination);
+
+    sourceNode.onended = function() {
+      if (isPlaying) {
+        isPlaying = false;
+        pauseOffset = 0;
+        updatePlayUI();
+        releaseLock();
+      }
+    };
+
+    startTime = ctx.currentTime - (pauseOffset / playbackRate);
+    sourceNode.start(0, pauseOffset);
+    isPlaying = true;
+
+    acquireLock();
+    updatePlayUI();
+    startProgressLoop();
+  }
+
+  function pause() {
+    if (!isPlaying || !sourceNode) return;
+
+    var ctx = initAudioCtx();
+    pauseOffset = (ctx.currentTime - startTime) * playbackRate;
+    // Clamp to prevent overshoot
+    if (audioBuffer) pauseOffset = Math.min(pauseOffset, audioBuffer.duration);
+
+    try { sourceNode.stop(); } catch(e) {}
+    sourceNode.disconnect();
+    sourceNode = null;
+    isPlaying = false;
+
+    releaseLock();
+    updatePlayUI();
+  }
+
+  function togglePlay() {
+    if (isPlaying) pause();
+    else play();
+  }
+
+  function seek(fraction) {
+    if (!audioBuffer) return;
+    fraction = Math.max(0, Math.min(1, fraction));
+    pauseOffset = fraction * audioBuffer.duration;
+    if (isPlaying) {
+      play();
+    } else {
+      updateTimeDisplay();
+      elFill.style.width = (fraction * 100) + '%';
+    }
+  }
+
+  // ---- Speed Change (server-side re-synthesis) ----
+
+  async function onSpeedChange(newSpeed) {
+    if (!currentText) return;
+
+    // Speed doesn't apply to clones — skip regeneration
+    if (currentClone) {
+      // Revert button text
+      speedIdx = SPEEDS.indexOf(currentSpeed);
+      if (speedIdx < 0) speedIdx = 2;
+      elBtnSpeed.textContent = currentSpeed + 'x';
+      return;
+    }
+
+    // Stop current playback
+    if (isPlaying) pause();
+
+    // Show regenerating overlay
+    elRegen.classList.add('visible');
+
+    var prevSpeed = currentSpeed;
+
+    try {
+      var result = await callServerTool('muse_regenerate', {
+        text: currentText,
+        voice: currentVoice,
+        speed: newSpeed,
+      });
+
+      var content = result && result.content;
+      var textItem = Array.isArray(content) ? content.find(function(c) { return c.type === 'text'; }) : null;
+      if (!textItem) throw new Error('No response');
+
+      var data = JSON.parse(textItem.text);
+      if (data.error) throw new Error(data.error);
+
+      audioB64 = data.audio;
+      currentVoice = data.voice;
+      currentSpeed = data.speed;
+      currentFormat = data.format || 'wav';
+      audioBuffer = await decodeAudio(data.audio);
+
+      // Update button + index to match actual speed
+      speedIdx = SPEEDS.indexOf(currentSpeed);
+      if (speedIdx < 0) speedIdx = 2;
+      elBtnSpeed.textContent = currentSpeed + 'x';
+
+      pauseOffset = 0;
+      updateTimeDisplay();
+      elFill.style.width = '0%';
+
+      // Try autoplay the regenerated audio
+      tryAutoplay();
+    } catch(e) {
+      // Revert button text to previous speed
+      currentSpeed = prevSpeed;
+      speedIdx = SPEEDS.indexOf(prevSpeed);
+      if (speedIdx < 0) speedIdx = 2;
+      elBtnSpeed.textContent = prevSpeed + 'x';
+    }
+
+    elRegen.classList.remove('visible');
+  }
+
+  // ---- Progress Loop ----
+
+  function startProgressLoop() {
+    cancelAnimationFrame(rafId);
+    function tick() {
+      if (!isPlaying || !audioBuffer) return;
+      var ctx = initAudioCtx();
+      var elapsed = (ctx.currentTime - startTime) * playbackRate;
+      var dur = audioBuffer.duration;
+      var pct = Math.min(elapsed / dur, 1);
+
+      elFill.style.width = (pct * 100) + '%';
+      elTime.textContent = fmtTime(elapsed) + ' / ' + fmtTime(dur);
+
+      if (pct < 1) rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function fmtTime(s) {
+    if (!isFinite(s) || s < 0) s = 0;
+    var m = Math.floor(s / 60);
+    var sec = Math.floor(s % 60);
+    return m + ':' + String(sec).padStart(2, '0');
+  }
+
+  function updateTimeDisplay() {
+    if (!audioBuffer) return;
+    elTime.textContent = fmtTime(pauseOffset) + ' / ' + fmtTime(audioBuffer.duration);
+  }
+
+  // ---- UI Updates ----
+
+  function updatePlayUI() {
+    if (isPlaying) {
+      elBtnPlay.classList.add('playing');
+      elPlayer.classList.add('playing');
+      elIconPlay.classList.add('hidden');
+      elIconPause.classList.remove('hidden');
+    } else {
+      elBtnPlay.classList.remove('playing');
+      elPlayer.classList.remove('playing');
+      elIconPlay.classList.remove('hidden');
+      elIconPause.classList.add('hidden');
+    }
+    if (!isPlaying) updateTimeDisplay();
+  }
+
+  function showState(state) {
+    elLoading.classList.toggle('hidden', state !== 'loading');
+    elReady.classList.toggle('hidden', state !== 'ready');
+    elError.classList.toggle('hidden', state !== 'error');
+  }
+
+  function showError(msg) {
+    elError.textContent = msg;
+    showState('error');
+  }
+
+  // ---- Voice Selector ----
+
+  async function loadVoices() {
+    if (voicesLoaded) return;
+    try {
+      var result = await callServerTool('muse_list_voices_embed', {});
+      var content = result && result.content;
+      if (!content) return;
+      var textItem = Array.isArray(content) ? content.find(function(c) { return c.type === 'text'; }) : null;
+      if (!textItem) return;
+      var data = JSON.parse(textItem.text);
+
+      // Clear existing
+      elVoiceSelect.innerHTML = '';
+
+      // Voice Clones optgroup (if any)
+      var clones = data.clones || {};
+      var cloneIds = Object.keys(clones);
+      if (cloneIds.length > 0) {
+        var cloneGroup = document.createElement('optgroup');
+        cloneGroup.label = 'Voice Clones (~7s)';
+        for (var c = 0; c < cloneIds.length; c++) {
+          var opt = document.createElement('option');
+          opt.value = 'clone:' + cloneIds[c];
+          opt.textContent = clones[cloneIds[c]];
+          if (currentClone === cloneIds[c]) opt.selected = true;
+          cloneGroup.appendChild(opt);
+        }
+        elVoiceSelect.appendChild(cloneGroup);
+      }
+
+      // Preset voice optgroups
+      var presets = data.presets || data;
+      var groupNames = Object.keys(presets);
+      for (var g = 0; g < groupNames.length; g++) {
+        var groupName = groupNames[g];
+        var voices = presets[groupName];
+        var optgroup = document.createElement('optgroup');
+        optgroup.label = groupName;
+        for (var v = 0; v < voices.length; v++) {
+          var opt = document.createElement('option');
+          opt.value = voices[v][0];
+          opt.textContent = voices[v][1] + ' (' + voices[v][0] + ')';
+          if (!currentClone && voices[v][0] === currentVoice) opt.selected = true;
+          optgroup.appendChild(opt);
+        }
+        elVoiceSelect.appendChild(optgroup);
+      }
+      voicesLoaded = true;
+    } catch(e) {
+      // Voice list failed — just show current voice as only option
+      var fallback = document.createElement('option');
+      fallback.value = currentClone ? ('clone:' + currentClone) : currentVoice;
+      fallback.textContent = currentClone || currentVoice;
+      fallback.selected = true;
+      elVoiceSelect.appendChild(fallback);
+    }
+  }
+
+  async function onVoiceChange() {
+    var newValue = elVoiceSelect.value;
+    if (!newValue || !currentText) return;
+
+    var isClone = newValue.indexOf('clone:') === 0;
+    var cloneId = isClone ? newValue.substring(6) : '';
+    var voiceId = isClone ? '' : newValue;
+
+    // Skip if same as current
+    if (isClone && cloneId === currentClone) return;
+    if (!isClone && voiceId === currentVoice && !currentClone) return;
+
+    // Stop current playback
+    if (isPlaying) pause();
+
+    // Show regenerating overlay
+    elRegen.classList.add('visible');
+
+    try {
+      var args = { text: currentText };
+      if (isClone) {
+        args.clone = cloneId;
+      } else {
+        args.voice = voiceId;
+        args.speed = currentSpeed;
+      }
+
+      var result = await callServerTool('muse_regenerate', args);
+
+      var content = result && result.content;
+      var textItem = Array.isArray(content) ? content.find(function(c) { return c.type === 'text'; }) : null;
+      if (!textItem) throw new Error('No response');
+
+      var data = JSON.parse(textItem.text);
+      if (data.error) throw new Error(data.error);
+
+      audioB64 = data.audio;
+      currentVoice = data.voice || '';
+      currentClone = data.clone || '';
+      currentSpeed = data.speed || 1.0;
+      currentFormat = data.format || 'wav';
+      audioBuffer = await decodeAudio(data.audio);
+
+      pauseOffset = 0;
+      updateTimeDisplay();
+      elFill.style.width = '0%';
+
+      tryAutoplay();
+    } catch(e) {
+      // Revert select to current
+      if (currentClone) {
+        elVoiceSelect.value = 'clone:' + currentClone;
+      } else {
+        elVoiceSelect.value = currentVoice;
+      }
+    }
+
+    elRegen.classList.remove('visible');
+  }
+
+  // ---- Tool Result Handler (structuredContent delivers audio directly) ----
+
+  function onToolResult(params) {
+    try {
+      // structuredContent is the primary path — audio comes here directly,
+      // bypassing model context (no size limit)
+      var data = params.structuredContent || null;
+
+      // Fallback: try to parse from text content (for error messages)
+      if (!data) {
+        var content = params.content || (params.result && params.result.content) || [];
+        var textItem = Array.isArray(content)
+          ? content.find(function(c) { return c.type === 'text'; })
+          : null;
+
+        if (textItem) {
+          // Check if it's an error message
+          var txt = textItem.text || '';
+          if (txt.indexOf('Error:') === 0) {
+            showError(txt);
+            return;
+          }
+          // Try parsing as JSON (legacy/fallback)
+          try {
+            data = JSON.parse(txt);
+          } catch(e) {
+            // Not JSON — just a status message from model
+            showError('No audio data received.');
+            return;
+          }
+        } else {
+          showError('No audio data received.');
+          return;
+        }
+      }
+
+      if (data.error) {
+        showError(data.error);
+        return;
+      }
+
+      if (!data.audio) {
+        showError('No audio in response.');
+        return;
+      }
+
+      loadAudio(data);
+    } catch(e) {
+      showError('Failed to load audio: ' + e.message);
+    }
+  }
+
+  function onToolInput(params) {
+    // Tool input received — audio is being generated
+    showState('loading');
+  }
+
+  async function loadAudio(data) {
+    try {
+      audioB64 = data.audio;
+      currentVoice = data.voice || '';
+      currentClone = data.clone || '';
+      currentText = data.text || '';
+      currentSpeed = data.speed || 1.0;
+      currentFormat = data.format || 'wav';
+
+      audioBuffer = await decodeAudio(data.audio);
+
+      var spd = data.speed || 1.0;
+      speedIdx = SPEEDS.indexOf(spd);
+      if (speedIdx < 0) speedIdx = 2;
+      playbackRate = 1.0;  // Always 1.0 — Kokoro bakes speed into the audio
+      elBtnSpeed.textContent = spd + 'x';
+
+      pauseOffset = 0;
+      showState('ready');
+      updateTimeDisplay();
+
+      // Load voice selector in background
+      loadVoices();
+
+      // Only autoplay if freshly generated — not on replay (refresh/scroll back).
+      // Timestamp check is immune to iframe sandbox storage issues.
+      var shouldAutoplay = false;
+      if (data.generated_at) {
+        var ageSeconds = (Date.now() / 1000) - data.generated_at;
+        shouldAutoplay = ageSeconds < 30;
+      }
+      if (shouldAutoplay) {
+        tryAutoplay();
+      }
+    } catch(e) {
+      showError('Failed to decode audio.');
+    }
+  }
+
+  async function tryAutoplay() {
+    var ctx = initAudioCtx();
+    try {
+      await ctx.resume();
+      if (ctx.state === 'running') {
+        play();
+      } else {
+        showClickHint();
+      }
+    } catch(e) {
+      showClickHint();
+    }
+  }
+
+  function showClickHint() {
+    elHint.classList.add('visible');
+  }
+
+  // ---- Event Listeners ----
+
+  // Play/Pause
+  elBtnPlay.addEventListener('click', function() {
+    elHint.classList.remove('visible');
+    togglePlay();
+  });
+
+  // Progress bar seek
+  elProgress.addEventListener('click', function(e) {
+    var rect = elProgress.getBoundingClientRect();
+    seek((e.clientX - rect.left) / rect.width);
+  });
+
+  // Speed cycle — regenerates via server (Kokoro synthesizes at native speed)
+  elBtnSpeed.addEventListener('click', function() {
+    speedIdx = (speedIdx + 1) % SPEEDS.length;
+    var newSpeed = SPEEDS[speedIdx];
+    elBtnSpeed.textContent = newSpeed + 'x';  // Optimistic UI update
+    onSpeedChange(newSpeed);
+  });
+
+  // Voice change
+  elVoiceSelect.addEventListener('change', onVoiceChange);
+
+  // Download — saves via server to ~/Downloads/ (iframe sandbox blocks Blob URLs)
+  elBtnDL.addEventListener('click', async function() {
+    if (!audioB64) return;
+
+    var ext = currentFormat === 'mp3' ? 'mp3' : 'wav';
+    var safeName = (currentClone || currentVoice || 'muse').replace(/[^a-zA-Z0-9_-]/g, '');
+    var filename = 'muse-' + safeName + '-' + Date.now() + '.' + ext;
+
+    try {
+      var result = await callServerTool('muse_save_audio', {
+        audio: audioB64,
+        filename: filename,
+        format: currentFormat,
+      });
+
+      var content = result && result.content;
+      var textItem = Array.isArray(content) ? content.find(function(c) { return c.type === 'text'; }) : null;
+      if (textItem) {
+        var data = JSON.parse(textItem.text);
+        if (data.error) throw new Error(data.error);
+      }
+
+      // Flash green on success
+      elBtnDL.style.color = 'var(--state-speak)';
+      setTimeout(function() { elBtnDL.style.color = ''; }, 1500);
+    } catch(e) {
+      // Flash red on failure
+      elBtnDL.style.color = 'var(--error)';
+      setTimeout(function() { elBtnDL.style.color = ''; }, 1500);
+    }
+  });
+
+  // First click anywhere resumes AudioContext (for Web/Mobile)
+  elPlayer.addEventListener('click', function() {
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().then(function() {
+        elHint.classList.remove('visible');
+        if (!isPlaying && audioBuffer) {
+          play();
+        }
+      });
+    }
+  }, { once: true });
+
+  // ---- Cleanup ----
+
+  function cleanup() {
+    if (sourceNode) {
+      try { sourceNode.stop(); } catch(e) {}
+      sourceNode.disconnect();
+    }
+    if (audioCtx) {
+      audioCtx.close().catch(function(){});
+    }
+    if (rafId) cancelAnimationFrame(rafId);
+    if (lockInterval) clearInterval(lockInterval);
+    releaseLock();
+  }
+
+  // ---- Init ----
+  initMcpApp();
+  startLockMonitor();
+
+})();
+</script>
+</body>
+</html>
