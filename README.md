@@ -6,7 +6,7 @@ Powered by [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M). Runs locally
 
 54 voices. 9 languages. Adjustable speed. Built-in player with replay and download.
 
-Part of the [MUSE Studio](https://ko-fi.com/thefunkatorium) line by The Funkatorium.
+Part of the [MUSE Studio](https://linktr.ee/musestudio95) line by The Funkatorium.
 
 ## What You Get
 
@@ -176,4 +176,4 @@ Jurisdiction: Amtsgericht Berlin.
 
 ---
 
-Built by [The Funkatorium](https://ko-fi.com/thefunkatorium)
+Built by [The Funkatorium](https://linktr.ee/musestudio95)
