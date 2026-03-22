@@ -1,22 +1,45 @@
-# MUSE TTS Embed
+<p align="center">
+  <img src="./banner.png" alt="MUSE TTS Embed" width="600" />
+</p>
 
-**Premium text-to-speech with an embedded audio player in Claude.** Play, pause, seek, change voices, download — all inside the chat.
+<p align="center">
+  <em>Your AI speaks — and the voice stays, right there in the chat.</em>
+</p>
 
-Powered by [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M). Runs locally — no cloud APIs, no Docker. All processing on-device, fully private.
+<p align="center">
+  <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-D4AF37?style=flat" alt="License: Apache 2.0" /></a>
+  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/Protocol-Claude%20MCP-000000?style=flat&logo=anthropic&logoColor=white" alt="Claude MCP" />
+  <img src="https://img.shields.io/badge/TTS-Kokoro--82M-D4AF37?style=flat" alt="Kokoro-82M" />
+</p>
 
-54 voices. 9 languages. Adjustable speed. Built-in player with replay and download.
+<p align="center">
+  <img src="https://img.shields.io/badge/macOS-Apple%20Silicon-000000?style=flat&logo=apple&logoColor=white" alt="macOS" />
+  <img src="https://img.shields.io/badge/Windows-supported-0078D4?style=flat&logo=windows&logoColor=white" alt="Windows" />
+  <img src="https://img.shields.io/badge/Linux-supported-FCC624?style=flat&logo=linux&logoColor=black" alt="Linux" />
+  <img src="https://img.shields.io/badge/Voices-54-brightgreen?style=flat" alt="54 Voices" />
+  <img src="https://img.shields.io/badge/Languages-9-brightgreen?style=flat" alt="9 Languages" />
+</p>
 
-Part of the [MUSE Studio](https://linktr.ee/musestudio95) line by The Funkatorium.
+---
 
-## What You Get
+## What Is This?
 
-Unlike basic TTS that plays once and disappears, MUSE TTS Embed gives you a **persistent audio player** right in the conversation:
+Most TTS plays once and vanishes. MUSE TTS Embed gives you a **persistent audio player** embedded directly in Claude's chat — play, pause, seek, replay, download. The voice doesn't disappear. It stays.
 
-- **Play / Pause / Seek** — scrub to any point, replay as many times as you want
-- **Voice Selector** — switch between 54 voices without leaving the chat
-- **Speed Control** — cycle through 0.5x, 0.75x, 1.0x, 1.25x, 1.5x, 2.0x
-- **Download** — save any generation as a WAV file
-- **Auto-play** on Desktop, click-to-play on Web/Mobile
+54 preset voices, voice cloning from any reference WAV, three engines, all running locally on your machine.
+
+> Looking for direct audio playback without a player widget? See [MUSE TTS Live](https://github.com/falcoschaefer99-eng/muse-tts).
+
+## Features
+
+- **Embedded Player** — play, pause, seek, replay. The audio stays in your chat.
+- **Voice Selector** — switch between 54 voices without leaving the conversation
+- **Voice Cloning** — bring your own reference WAV, clone any voice (~7s generation)
+- **Speed Control** — 0.5x through 2.0x playback
+- **Download** — save any generation as WAV or MP3
+- **3 Engines** — Kokoro-82M (~1s), IndexTTS-1.5 (Apple Silicon cloning), Chatterbox (cross-platform cloning)
+- **100% Local** — no cloud APIs, no Docker, no subscription
 
 ## Quick Start
 
@@ -49,39 +72,37 @@ Open **Settings > Developer > Edit Config** and add:
 }
 ```
 
-Replace `/path/to/muse-tts-embed/` with the actual path where you saved `server.py`.
-
 Restart Claude Desktop. You should see `muse-tts-embed` in your MCP servers list.
 
 ### 3. Speak
 
-Ask Claude to speak anything. It now has `muse_speak_embed` — a voice tool with a built-in player.
+Ask Claude to speak anything. Try: *"Say hello in a warm voice"* or *"Read this paragraph aloud"*
 
-Try: *"Say hello in a warm voice"* or *"Read this paragraph aloud"*
+## Voice Cloning
+
+Add your own reference WAV files to the `voices/` directory. They'll be automatically detected on startup.
+
+```
+voices/
+  my_narrator.wav
+  interview_voice.wav
+```
+
+Then ask Claude: *"Speak this using the my_narrator clone"*
+
+Or use `ref_audio` to point to any WAV in `voices/` or `~/Downloads/`:
+
+*"Read this aloud using the reference audio at ~/Downloads/sample.wav"*
 
 ## Configuration
-
-Set defaults via environment variables:
-
-```json
-{
-  "mcpServers": {
-    "muse-tts-embed": {
-      "command": "python3",
-      "args": ["/path/to/muse-tts-embed/server.py"],
-      "env": {
-        "KOKORO_VOICE": "am_onyx",
-        "KOKORO_SPEED": "1.1"
-      }
-    }
-  }
-}
-```
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `KOKORO_VOICE` | `am_onyx` | Default voice ID |
-| `KOKORO_SPEED` | `1.0` | Default speed (0.5–2.0) |
+| `KOKORO_SPEED` | `1.0` | Default speed (0.5 - 2.0) |
+| `MUSE_AUTH_TOKEN` | (required for HTTP) | Bearer token for HTTP mode |
+| `MUSE_PORT` | `3001` | HTTP server port |
+| `MUSE_HOST` | `127.0.0.1` | HTTP bind address |
 
 ## HTTP Mode (Web / Mobile)
 
@@ -92,50 +113,47 @@ export MUSE_AUTH_TOKEN=your-secret-token
 python3 server.py --http
 ```
 
-This starts an HTTP server on port 3001 (configurable via `MUSE_PORT`). All requests require a Bearer token.
+Then expose via tunnel (ngrok, cloudflared) and add the URL to Claude's MCP settings.
 
-Then expose it via tunnel (e.g., ngrok or cloudflared) and add the URL to Claude's MCP settings.
-
-> **Note:** Web and Mobile browsers block auto-play. The player will show a "click to play" hint — tap the play button to start.
+> Browsers block auto-play. The player shows a "click to play" hint — tap play to start.
 
 ## Voices
 
-54 voices across 9 languages:
+54 preset voices across 9 languages (American English, British English, Spanish, French, Hindi, Italian, Japanese, Portuguese, Mandarin).
+
+<details>
+<summary><strong>Full voice list</strong></summary>
 
 | Language | Female | Male |
 |----------|--------|------|
 | American English | af_alloy, af_aoede, af_bella, af_heart, af_jessica, af_kore, af_nicole, af_nova, af_river, af_sarah, af_sky | am_adam, am_echo, am_eric, am_fenrir, am_liam, am_michael, am_onyx, am_puck, am_santa |
 | British English | bf_alice, bf_emma, bf_isabella, bf_lily | bm_daniel, bm_fable, bm_george, bm_lewis |
 | Spanish | ef_dora | em_alex, em_santa |
-| French | ff_siwis | — |
+| French | ff_siwis | -- |
 | Hindi | hf_alpha, hf_beta | hm_omega, hm_psi |
 | Italian | if_sara | im_nicola |
 | Japanese | jf_alpha, jf_gongitsune, jf_nezumi, jf_tebukuro | jm_kumo |
 | Portuguese | pf_dora | pm_alex, pm_santa |
 | Mandarin | zf_xiaobei, zf_xiaoni, zf_xiaoxiao, zf_xiaoyi | zm_yunjian, zm_yunxi, zm_yunxia, zm_yunyang |
 
-Use the **voice selector** in the player to switch voices live, or ask Claude to use a specific voice.
+</details>
 
 ## Tools
 
 | Tool | What it does |
 |------|-------------|
-| `muse_speak_embed` | Speak text with embedded player (play, pause, seek, download) |
+| `muse_speak_embed` | Speak text with embedded player (preset or cloned voice) |
 | `muse_embed_check` | Verify engine, platform, and configuration |
-
-The player also has internal tools for voice switching and regeneration that work automatically.
 
 ## How It Works
 
-MUSE TTS Embed uses **MCP Apps** — a protocol that lets MCP servers embed interactive UI directly in Claude's chat. When you ask Claude to speak:
+MUSE TTS Embed uses **MCP Apps** to embed interactive UI directly in Claude's chat:
 
-1. The server generates speech locally using Kokoro-82M
-2. Audio is sent via `structuredContent` (bypasses model context, no size limit on playback)
-3. The embedded player receives the audio and plays it with full controls
+1. The server generates speech locally using your chosen engine
+2. Audio is delivered via `structuredContent` (bypasses model context, no size limit)
+3. The embedded player renders with full controls
 
-**Generation limit:** Up to 2000 characters per generation (~2 minutes of speech). This comfortably covers any normal conversational response from Claude.
-
-The player is a self-contained HTML/JS app that communicates with the server via postMessage RPC.
+The player is a self-contained HTML/JS app — no external dependencies, no CDN calls.
 
 ## Requirements
 
@@ -144,13 +162,14 @@ The player is a self-contained HTML/JS app that communicates with the server via
 - One of: `mlx_audio` (Mac M-series) or `kokoro` + `soundfile` (any platform)
 - ~200MB disk space (model downloads on first use)
 
-## Troubleshooting
+<details>
+<summary><strong>Troubleshooting</strong></summary>
 
 **Player shows "Generating..." but nothing happens:**
 Check that the TTS engine is installed. Run `muse_embed_check` to verify status.
 
 **No sound on Web/Mobile:**
-Browsers block auto-play. Click the play button — the "click to play" hint should appear.
+Browsers block auto-play. Click the play button.
 
 **"No TTS engine found":**
 Install an engine: `pip install mlx_audio` (Mac M-series) or `pip install kokoro soundfile numpy` (any platform).
@@ -159,21 +178,23 @@ Install an engine: `pip install mlx_audio` (Mac M-series) or `pip install kokoro
 First run downloads ~200MB. Subsequent runs use the cached model.
 
 **"Text too long" error:**
-Each generation handles up to 2000 characters (~2 minutes of speech). If Claude's response is longer, ask it to speak a shorter section, or break it into parts.
+Max 2000 characters per generation (~2 minutes of speech). Break longer text into parts.
 
 **Player doesn't appear:**
-Make sure you're on a version of Claude that supports MCP Apps. Update Claude Desktop to the latest version.
+Update Claude Desktop to the latest version with MCP Apps support.
+
+</details>
 
 ## License
 
 Licensed under the [Apache License, Version 2.0](LICENSE.md).
 
-Copyright 2026 The Funkatorium (Falco & Rook Schäfer).
-
-This work is also protected under the German Copyright Act (Urheberrechtsgesetz - UrhG).
-Copyright holder: The Funkatorium (Falco & Rook Schäfer), Berlin, Germany.
-Jurisdiction: Amtsgericht Berlin.
+Copyright 2026 The Funkatorium (Falco & Rook Schäfer). Protected under German Copyright Law (Urheberrechtsgesetz). Jurisdiction: Amtsgericht Berlin.
 
 ---
 
-Built by [The Funkatorium](https://linktr.ee/musestudio95)
+<p align="center">
+  <a href="https://linktr.ee/musestudio95">
+    <img src="https://img.shields.io/badge/Built%20by-The%20Funkatorium-D4AF37?style=flat" alt="Built by The Funkatorium" />
+  </a>
+</p>
