@@ -25,7 +25,7 @@
 
 ## What Is This?
 
-Most TTS plays once and vanishes. MUSE TTS Embed gives you a **persistent audio player** embedded directly in Claude's chat — play, pause, seek, replay, download. The voice doesn't disappear. It stays.
+MUSE TTS Embed gives you a **persistent audio player** embedded directly in Claude's chat — play, pause, seek, replay, download.
 
 54 preset voices, voice cloning from any reference WAV, three engines. Everything on your machine.
 
@@ -33,7 +33,7 @@ Most TTS plays once and vanishes. MUSE TTS Embed gives you a **persistent audio 
 
 ## Features
 
-- **Embedded Player** — play, pause, seek, replay. The audio stays in your chat.
+- **Embedded Player** — play, pause, seek, replay
 - **Voice Selector** — switch between 54 voices without leaving the conversation
 - **Voice Cloning** — bring your own reference WAV, clone any voice (~7s generation)
 - **Speed Control** — 0.5x through 2.0x playback
@@ -72,7 +72,7 @@ Open **Settings > Developer > Edit Config** and add:
 }
 ```
 
-Restart Claude Desktop. You should see `muse-tts-embed` in your MCP servers list.
+Restart Claude Desktop.
 
 ### 3. Speak
 
@@ -80,7 +80,7 @@ Ask Claude to speak anything. Try: *"Say hello in a warm voice"* or *"Read this 
 
 ## Voice Cloning
 
-Add your own reference WAV files to the `voices/` directory. They'll be automatically detected on startup.
+Add your own reference WAV files to the `voices/` directory. They'll be detected on startup.
 
 ```
 voices/
@@ -147,13 +147,7 @@ Then expose via tunnel (ngrok, cloudflared) and add the URL to Claude's MCP sett
 
 ## How It Works
 
-MUSE TTS Embed uses **MCP Apps** to embed interactive UI directly in Claude's chat:
-
-1. The server generates speech locally using your chosen engine
-2. Audio is delivered via `structuredContent` (bypasses model context, no size limit)
-3. The embedded player renders with full controls
-
-The player is a self-contained HTML/JS app — no external dependencies, no CDN calls.
+Audio is delivered via `structuredContent` — bypasses model context, no size limit. The player is a self-contained HTML/JS app with no external dependencies.
 
 ## Requirements
 
@@ -172,10 +166,10 @@ Check that the TTS engine is installed. Run `muse_embed_check` to verify status.
 Browsers block auto-play. Click the play button.
 
 **"No TTS engine found":**
-Install an engine: `pip install mlx_audio` (Mac M-series) or `pip install kokoro soundfile numpy` (any platform).
+See installation above.
 
 **Model download is slow:**
-First run downloads ~200MB. Subsequent runs use the cached model.
+First run downloads ~200MB.
 
 **"Text too long" error:**
 Max 2000 characters per generation (~2 minutes of speech). Break longer text into parts.
