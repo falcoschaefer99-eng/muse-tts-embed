@@ -25,9 +25,7 @@
 
 ## What Is This?
 
-MUSE TTS Embed gives you a **persistent audio player** embedded directly in Claude's chat — play, pause, seek, replay, download.
-
-54 preset voices, voice cloning from any reference WAV, three engines. Everything on your machine.
+MUSE TTS Embed gives Claude a **persistent audio player** — right in the chat. Everything runs on your machine.
 
 > Looking for direct audio playback without a player widget? See [MUSE TTS Live](https://github.com/falcoschaefer99-eng/muse-tts).
 
@@ -35,7 +33,7 @@ MUSE TTS Embed gives you a **persistent audio player** embedded directly in Clau
 
 - **Embedded Player** — play, pause, seek, replay
 - **Voice Selector** — switch between 54 voices without leaving the conversation
-- **Voice Cloning** — bring your own reference WAV, clone any voice (~7s generation)
+- **Voice Cloning** — drop a WAV, get a clone (~7s)
 - **Speed Control** — 0.5x through 2.0x playback
 - **Download** — save any generation as WAV or MP3
 - **3 Engines** — Kokoro-82M (~1s), IndexTTS-1.5 (Apple Silicon cloning), Chatterbox (cross-platform cloning)
@@ -147,7 +145,7 @@ Then expose via tunnel (ngrok, cloudflared) and add the URL to Claude's MCP sett
 
 ## How It Works
 
-Audio is delivered via `structuredContent` — bypasses model context, no size limit. The player is a self-contained HTML/JS app with no external dependencies.
+Audio is delivered via `structuredContent` — bypasses model context, no size limit. The player is a self-contained HTML/JS app.
 
 ## Requirements
 
