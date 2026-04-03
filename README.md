@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <em>Your AI speaks — and the voice stays, right there in the chat.</em>
+  <img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=500&size=22&pause=1200&color=D4AF37&center=true&vCenter=true&width=980&lines=Your+AI+speaks+%E2%80%94+and+the+voice+stays+in+chat.;Persistent+player+experience%2C+fully+local.;54+voices+on+demand." alt="MUSE TTS Embed tagline" />
 </p>
 
 <p align="center">
